@@ -5,12 +5,24 @@
 #include "iterator.h"
 #include<typeinfo>
 
-//using namespace std;
+using namespace std;
+
+class A{
+public:
+    int a;
+//    A():a(10){};
+};
 
 int main() {
-    typename iterator_traits<const char*>::difference_type abc;
-    int c;
-    std::cout<<typeid(static_cast<typename iterator_traits<int *>::difference_type *>(0));
-    return 0;
+    int *a=new int[1000];
+    for(int i=0;i<1000;i++){
+        a[i]=i+1;
+    }
+    delete[] a;
+    int *b=new int[1000]();
+    for(int i=0;i<100;i++){
+        cout<<b[i]<<endl;
+    }
 
+    return 0;
 }
