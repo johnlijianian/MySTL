@@ -17,7 +17,7 @@ enum {__ALIGN = 8};
 enum {__MAX_BYTES = 128};
 enum {__NFREELISTS = __MAX_BYTES/__ALIGN};
 
-# 第一级配置器
+// 第一级配置器
 template <int inst>
 class __malloc_alloc_template {
 private:
@@ -182,9 +182,6 @@ private:
         }
 
     }
-
-
-
 
     static char *start_free;
     static char *end_free;
