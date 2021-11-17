@@ -251,7 +251,99 @@ public:
 public:
     pair<iterator, bool > insert_unique(const value_type& x);
     iterator insert_equal(const value_type& x);
-
 }
 
+template<class Key, class Value, class KeyOfValue, class Compare, class Alloc>
+typename rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::iterator
+rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::insert_equal(const value_type &x) {
+    link_type y = header;
+    link_type x = root();
+    while (x != 0){
+        y = x;
+        x = key_compare(KeyOfValue()(v), key(x)) ? left(x) : right(x);
+    }
+    return __insert(x, y, v);
+}
+
+template<class Key, class Value, class KeyOfValue, class Compare, class Alloc>
+pair<typename rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::iterator, bool>
+        rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::insert_unique(const value_type &x) {
+            link_type y = header;
+            link_type x = root();
+            bool comp = true;
+    while (x != 0) {
+        y = x;
+        comp = key_compare(KeyOfValue()(v), key(x));
+        x = comp ? left(x) : right(x);
+    }
+
+    iterator j = iterator(y);
+    if(comp)
+        if(j == begin())
+            return pair<iterator,bool>(__insert(x,y,v), true);
+        else
+            --j;
+   if (key_compare(key(j.node), KeyOfValue()(v)))
+       return pair<iterator,bool>(__insert(x,y,v), true);
+   return pair<iterator, bool> (j, false);
+        }
+
+
+template <class Key, class Value, class KeyOfValue, class Compare, class Alloc>
+typename rb_tree<Key, Value, KeyOfValue, Compare, Alloc>::iterator
+rb_tree<Key, Value, KeyOfValue, Compare, Alloc>:: __insert(base_ptr x_, base_ptr y_, const Value& v){
+            link_type x = (link_type) x_;
+            link_type y = (link_type) y_;
+            link_type z;
+
+            if (y == header || x != 0 || key_compare(KeyOfValue()(v), key(y))){
+                z = create_node(v);
+                left(y) = z;
+                if (y == header){
+                    root() = z;
+                    rightmost() = z;
+                }
+                else if (y == leftmost())
+                    leftmost() = z;
+            }
+            else{
+                z = create_node(v);
+                right(y) = z;
+                if (y == rightmost())
+                    rightmost() = z;
+            }
+    parent(z) = y;
+    left(z) = 0;
+    right(z) = 0;
+
+    __rb_tree_rebalance(z, header->parent);
+    ++node_count;
+    return iterator(z);
+}
+
+inline void
+__rb_tree_rebalance(__rb_tree_node_base* x, __rb_tree_node_base*&){
+    x->color = __rb_tree_red;
+    while (x != root && x->parent->color == __rb_tree_red) {
+        if (x->parent == x->parent->parent->left) {
+            __rb_tree_node_base *y = x->parent->parent->right;
+            if (y && y->color == __rb_tree_red) {
+                x->parent->color = __rb_tree_black;
+                y->color = __rb_tree_black;
+                x->parent->parent->color = __rb_tree_red;
+                x = x->parent->parent; // 递归
+            } else {
+                if (x == x->parent->right) {
+                    x = x->parent;
+                    __rb_tree_rotate_left(x, root);
+                }
+                x->parent->color = __rb_tree_black;
+                x->parent->parent->color = __rb_tree_red;
+                __rb_tree_rotate_right(x->parent->parent, root);
+            }
+        } else{
+            __rb_tree_node_base* y = x->parent->parent->left;
+        }
+    }
+}
 #endif //MYSTL_RB_TREE_H
